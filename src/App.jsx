@@ -25,6 +25,7 @@ const T = {
 /* ─── DATA ─────────────────────────────────────────────────────────────────── */
 const now = new Date();
 const addDays = d => new Date(now.getTime() + d * 86400000);
+const EXPIRY_WARN_DAYS = 3;
 
 const SERVICES = {
   Netflix:  { color: T.netflix, light: "#FFF0F0", icon: "N", label: "Netflix" },
@@ -90,7 +91,7 @@ function fmtExpiry(d) {
 function expiryLevel(d) {
   const n = daysLeft(d);
   if (n <= 1) return "crit";
-  if (n <= 3) return "warn";
+  if (n <= EXPIRY_WARN_DAYS) return "warn";
   return "ok";
 }
 
@@ -144,6 +145,7 @@ function ExpiryTag({ date }) {
         animation: lvl === "crit" ? "pulse 1.2s infinite" : "none",
         display:"inline-block",
       }}/>
+      {(lvl === "warn" || lvl === "crit") && <span>⚠️</span>}
       {fmtExpiry(date)}
     </span>
   );
@@ -538,7 +540,7 @@ export default function App() {
       return b.addedAt - a.addedAt;
     });
 
-  const urgentCnt = myList.filter(x => x.expiresAt && daysLeft(x.expiresAt) <= 3).length;
+  const urgentCnt = myList.filter(x => x.expiresAt && daysLeft(x.expiresAt) <= EXPIRY_WARN_DAYS).length;
   const currentSvc = SERVICES[svc];
 
   const statCounts = {
@@ -759,7 +761,7 @@ export default function App() {
                   期限切れ間近の作品があります
                 </div>
                 <div style={{ color:T.textSub, fontSize:11, marginTop:2 }}>
-                  TVer {urgentCnt}作品が3日以内に視聴期限を迎えます
+                  TVer {urgentCnt}作品が{EXPIRY_WARN_DAYS}日以内に視聴期限を迎えます
                 </div>
               </div>
             </div>
