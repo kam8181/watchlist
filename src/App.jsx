@@ -1,81 +1,86 @@
 import { useState, useEffect, useRef } from "react";
 
 /* ─── DESIGN TOKENS ────────────────────────────────────────────────────────── */
+
 const T = {
-  bg:      "#F5F3EF",
+  bg: "#F5F3EF",
   surface: "#FFFFFF",
-  card:    "#FAFAF8",
-  border:  "#E8E4DC",
+  card: "#FAFAF8",
+  border: "#E8E4DC",
   borderStrong: "#D4CFC5",
-  text:    "#1A1714",
+  text: "#1A1714",
   textMid: "#6B6560",
   textSub: "#A09890",
-  coral:   "#FF5C4D",
-  mint:    "#00C896",
-  sky:     "#3B82F6",
-  amber:   "#F59E0B",
-  lilac:   "#A78BFA",
+  coral: "#FF5C4D",
+  mint: "#00C896",
+  sky: "#3B82F6",
+  amber: "#F59E0B",
+  lilac: "#A78BFA",
   // service accents
   netflix: "#E50914",
-  unext:   "#0070F3",
-  tver:    "#1DC079",
+  unext: "#0070F3",
+  tver: "#1DC079",
   youtube: "#FF0000",
 };
 
 /* ─── DATA ─────────────────────────────────────────────────────────────────── */
+
 const now = new Date();
 const addDays = d => new Date(now.getTime() + d * 86400000);
 const EXPIRY_WARN_DAYS = 3;
 
 const SERVICES = {
-  Netflix:  { color: T.netflix, light: "#FFF0F0", icon: "N", label: "Netflix" },
-  "U-NEXT": { color: T.unext,   light: "#EEF5FF", icon: "U", label: "U-NEXT" },
-  TVer:     { color: T.tver,    light: "#EDFFF7", icon: "T", label: "TVer" },
-  YouTube:  { color: T.youtube, light: "#FFF0F0", icon: "▶", label: "YouTube" },
+  Netflix: { color: T.netflix, light: "#FFF0F0", icon: "N", label: "Netflix" },
+  "U-NEXT": { color: T.unext, light: "#EEF5FF", icon: "U", label: "U-NEXT" },
+  TVer: { color: T.tver, light: "#EDFFF7", icon: "T", label: "TVer" },
+  YouTube: { color: T.youtube, light: "#FFF0F0", icon: "▶", label: "YouTube" },
 };
 
 const GENRE_CHIPS = {
   ドラマ: { bg: "#FFE8E8", color: "#E05050" },
   アニメ: { bg: "#FFF3E0", color: "#E07820" },
-  映画:   { bg: "#FCE8FF", color: "#A050C0" },
+  映画: { bg: "#FCE8FF", color: "#A050C0" },
   バラエティ: { bg: "#FFFBE0", color: "#C09000" },
-  音楽:   { bg: "#E0FFF5", color: "#00A878" },
-  教育:   { bg: "#E8EEFF", color: "#4060D0" },
+  音楽: { bg: "#E0FFF5", color: "#00A878" },
+  教育: { bg: "#E8EEFF", color: "#4060D0" },
   "教育・エンタメ": { bg: "#E8EEFF", color: "#4060D0" },
   ドキュメンタリー: { bg: "#F0F0F0", color: "#606060" },
 };
 
 const NETFLIX_CATALOG = [
-  { id:"nf1", title:"地面師たち",       genre:"ドラマ",  year:2024, episodes:7,  desc:"大胆な詐欺師集団が挑む衝撃のクライムスリラー", rating:4.8, emoji:"🏢" },
-  { id:"nf2", title:"幽☆遊☆白書",      genre:"アニメ",  year:2023, episodes:10, desc:"伝説の漫画を実写ドラマ化した大作", rating:4.2, emoji:"👻" },
-  { id:"nf3", title:"First Love 初恋",  genre:"ドラマ",  year:2022, episodes:9,  desc:"宇多田ヒカルの楽曲で紡ぐ純愛ストーリー", rating:4.6, emoji:"❤️" },
-  { id:"nf4", title:"サンクチュアリ",    genre:"ドラマ",  year:2023, episodes:8,  desc:"相撲界を舞台にしたヒューマンドラマ", rating:4.7, emoji:"🏆" },
-  { id:"nf5", title:"今際の国のアリス",  genre:"ドラマ",  year:2022, episodes:16, desc:"命がけのゲームに挑む異世界サバイバル", rating:4.9, emoji:"🃏" },
-  { id:"nf6", title:"忍びの家",          genre:"ドラマ",  year:2024, episodes:8,  desc:"現代に生きる忍者一家の笑いと涙", rating:4.3, emoji:"🥷" },
+  { id:"nf1", title:"地面師たち", genre:"ドラマ", year:2024, episodes:7, desc:"大胆な詐欺師集団が挑む衝撃のクライムスリラー", rating:4.8, emoji:"🏢" },
+  { id:"nf2", title:"幽☆遊☆白書", genre:"アニメ", year:2023, episodes:10, desc:"伝説の漫画を実写ドラマ化した大作", rating:4.2, emoji:"👻" },
+  { id:"nf3", title:"First Love 初恋", genre:"ドラマ", year:2022, episodes:9, desc:"宇多田ヒカルの楽曲で紡ぐ純愛ストーリー", rating:4.6, emoji:"❤️" },
+  { id:"nf4", title:"サンクチュアリ", genre:"ドラマ", year:2023, episodes:8, desc:"相撲界を舞台にしたヒューマンドラマ", rating:4.7, emoji:"🏆" },
+  { id:"nf5", title:"今際の国のアリス", genre:"ドラマ", year:2022, episodes:16, desc:"命がけのゲームに挑む異世界サバイバル", rating:4.9, emoji:"🃏" },
+  { id:"nf6", title:"忍びの家", genre:"ドラマ", year:2024, episodes:8, desc:"現代に生きる忍者一家の笑いと涙", rating:4.3, emoji:"🥷" },
 ];
+
 const UNEXT_CATALOG = [
-  { id:"un1", title:"SHOGUN 将軍",       genre:"ドラマ",  year:2024, episodes:10, desc:"戦国時代を舞台にした壮大なエピックドラマ", rating:4.9, emoji:"⚔️" },
-  { id:"un2", title:"岸辺露伴は動かない", genre:"ドラマ",  year:2023, episodes:4,  desc:"漫画家の奇妙な体験を描くジョジョスピンオフ", rating:4.5, emoji:"✒️" },
-  { id:"un3", title:"パリピ孔明",         genre:"アニメ",  year:2022, episodes:12, desc:"諸葛孔明が現代渋谷で音楽業界に参戦", rating:4.4, emoji:"🎵" },
-  { id:"un4", title:"推しの子",           genre:"アニメ",  year:2023, episodes:11, desc:"芸能界の闇に迫るダークファンタジー", rating:4.8, emoji:"⭐" },
-  { id:"un5", title:"THE FIRST SLAM DUNK",genre:"映画",   year:2022, episodes:1,  desc:"伝説のバスケ漫画が映画で復活", rating:4.9, emoji:"🏀" },
-  { id:"un6", title:"呪術廻戦 懐玉・玉折",genre:"アニメ",  year:2023, episodes:24, desc:"五条悟の過去編・伝説の始まり", rating:4.7, emoji:"🌀" },
+  { id:"un1", title:"SHOGUN 将軍", genre:"ドラマ", year:2024, episodes:10, desc:"戦国時代を舞台にした壮大なエピックドラマ", rating:4.9, emoji:"⚔️" },
+  { id:"un2", title:"岸辺露伴は動かない", genre:"ドラマ", year:2023, episodes:4, desc:"漫画家の奇妙な体験を描くジョジョスピンオフ", rating:4.5, emoji:"✒️" },
+  { id:"un3", title:"パリピ孔明", genre:"アニメ", year:2022, episodes:12, desc:"諸葛孔明が現代渋谷で音楽業界に参戦", rating:4.4, emoji:"🎵" },
+  { id:"un4", title:"推しの子", genre:"アニメ", year:2023, episodes:11, desc:"芸能界の闇に迫るダークファンタジー", rating:4.8, emoji:"⭐" },
+  { id:"un5", title:"THE FIRST SLAM DUNK",genre:"映画", year:2022, episodes:1, desc:"伝説のバスケ漫画が映画で復活", rating:4.9, emoji:"🏀" },
+  { id:"un6", title:"呪術廻戦 懐玉・玉折",genre:"アニメ", year:2023, episodes:24, desc:"五条悟の過去編・伝説の始まり", rating:4.7, emoji:"🌀" },
 ];
+
 const TVER_CATALOG = [
-  { id:"tv1", title:"べらぼう〜蔦重栄華乃夢噺〜", genre:"ドラマ",        channel:"NHK総合",    expiresAt:addDays(2),  desc:"大河ドラマ・江戸の出版王の物語", rating:4.3, emoji:"📚" },
-  { id:"tv2", title:"ブラックペアン シーズン2",    genre:"ドラマ",        channel:"TBS",         expiresAt:addDays(5),  desc:"天才外科医が挑む最前線の医療バトル", rating:4.6, emoji:"🩺" },
-  { id:"tv3", title:"クレイジーダイヤモンド",       genre:"ドラマ",        channel:"フジテレビ",   expiresAt:addDays(1),  desc:"宝石業界を舞台にした痛快クライムコメディ", rating:4.2, emoji:"💎" },
-  { id:"tv4", title:"アンメット",                   genre:"ドラマ",        channel:"カンテレ",     expiresAt:addDays(8),  desc:"記憶を失った脳外科医の感動ヒューマンドラマ", rating:4.8, emoji:"🧠" },
-  { id:"tv5", title:"くりぃむしちゅーのハナタカ",   genre:"バラエティ",    channel:"テレビ朝日",   expiresAt:addDays(3),  desc:"知って得する情報バラエティの決定版", rating:4.1, emoji:"💡" },
-  { id:"tv6", title:"ザ・ノンフィクション",          genre:"ドキュメンタリー",channel:"フジテレビ",  expiresAt:addDays(6),  desc:"リアルな人生に密着したドキュメンタリー", rating:4.5, emoji:"🎥" },
+  { id:"tv1", title:"べらぼう〜蔦重栄華乃夢噺〜", genre:"ドラマ", channel:"NHK総合", expiresAt:addDays(2), desc:"大河ドラマ・江戸の出版王の物語", rating:4.3, emoji:"📚" },
+  { id:"tv2", title:"ブラックペアン シーズン2", genre:"ドラマ", channel:"TBS", expiresAt:addDays(5), desc:"天才外科医が挑む最前線の医療バトル", rating:4.6, emoji:"🩺" },
+  { id:"tv3", title:"クレイジーダイヤモンド", genre:"ドラマ", channel:"フジテレビ", expiresAt:addDays(1), desc:"宝石業界を舞台にした痛快クライムコメディ", rating:4.2, emoji:"💎" },
+  { id:"tv4", title:"アンメット", genre:"ドラマ", channel:"カンテレ", expiresAt:addDays(8), desc:"記憶を失った脳外科医の感動ヒューマンドラマ", rating:4.8, emoji:"🧠" },
+  { id:"tv5", title:"くりぃむしちゅーのハナタカ", genre:"バラエティ", channel:"テレビ朝日", expiresAt:addDays(3), desc:"知って得する情報バラエティの決定版", rating:4.1, emoji:"💡" },
+  { id:"tv6", title:"ザ・ノンフィクション", genre:"ドキュメンタリー",channel:"フジテレビ", expiresAt:addDays(6), desc:"リアルな人生に密着したドキュメンタリー", rating:4.5, emoji:"🎥" },
 ];
+
 const YOUTUBE_CATALOG = [
-  { id:"yt1", title:"HIKARU UTADA Live Sessions", genre:"音楽",          channel:"Hikaru Utada", desc:"宇多田ヒカルのライブ音源プレイリスト", rating:4.9, emoji:"🎤" },
-  { id:"yt2", title:"東海オンエア",                genre:"バラエティ",    channel:"東海オンエア", desc:"岡崎発の人気グループによる爆笑企画", rating:4.6, emoji:"😂" },
-  { id:"yt3", title:"QuizKnock",                   genre:"教育・エンタメ", channel:"QuizKnock",   desc:"東大発のクイズエンタメチャンネル", rating:4.7, emoji:"🧩" },
-  { id:"yt4", title:"ヒカキンTV",                  genre:"バラエティ",    channel:"HikakinTV",   desc:"日本最大のYouTuberによる多彩なコンテンツ", rating:4.3, emoji:"🎮" },
-  { id:"yt5", title:"水溜りボンド",                genre:"バラエティ",    channel:"水溜りボンド", desc:"カンタとトミーの笑えるリアクション企画", rating:4.4, emoji:"🌊" },
-  { id:"yt6", title:"NHK高校講座",                 genre:"教育",          channel:"NHK高校講座", desc:"無料で学べる高校全科目の講座動画", rating:4.2, emoji:"📖" },
+  { id:"yt1", title:"HIKARU UTADA Live Sessions", genre:"音楽", channel:"Hikaru Utada", desc:"宇多田ヒカルのライブ音源プレイリスト", rating:4.9, emoji:"🎤" },
+  { id:"yt2", title:"東海オンエア", genre:"バラエティ", channel:"東海オンエア", desc:"岡崎発の人気グループによる爆笑企画", rating:4.6, emoji:"😂" },
+  { id:"yt3", title:"QuizKnock", genre:"教育・エンタメ", channel:"QuizKnock", desc:"東大発のクイズエンタメチャンネル", rating:4.7, emoji:"🧩" },
+  { id:"yt4", title:"ヒカキンTV", genre:"バラエティ", channel:"HikakinTV", desc:"日本最大のYouTuberによる多彩なコンテンツ", rating:4.3, emoji:"🎮" },
+  { id:"yt5", title:"水溜りボンド", genre:"バラエティ", channel:"水溜りボンド", desc:"カンタとトミーの笑えるリアクション企画", rating:4.4, emoji:"🌊" },
+  { id:"yt6", title:"NHK高校講座", genre:"教育", channel:"NHK高校講座", desc:"無料で学べる高校全科目の講座動画", rating:4.2, emoji:"📖" },
 ];
 
 const CATALOG_MAP = { Netflix: NETFLIX_CATALOG, "U-NEXT": UNEXT_CATALOG, TVer: TVER_CATALOG, YouTube: YOUTUBE_CATALOG };
@@ -83,7 +88,7 @@ const CATALOG_MAP = { Netflix: NETFLIX_CATALOG, "U-NEXT": UNEXT_CATALOG, TVer: T
 function daysLeft(d) { return Math.ceil((d - now) / 86400000); }
 function fmtExpiry(d) {
   const n = daysLeft(d);
-  if (n < 0)  return "期限切れ";
+  if (n < 0) return "期限切れ";
   if (n === 0) return "今日まで！";
   if (n === 1) return "明日まで";
   return `あと${n}日`;
@@ -129,7 +134,7 @@ function ExpiryTag({ date }) {
   const cfg = {
     crit: { bg:"#FFE8E8", color:"#E03030", dot:"#E03030" },
     warn: { bg:"#FFF6E0", color:"#C07800", dot:"#F59E0B" },
-    ok:   { bg:"#E8FFF5", color:"#008060", dot:"#00C896" },
+    ok: { bg:"#E8FFF5", color:"#008060", dot:"#00C896" },
   }[lvl];
   return (
     <span style={{
@@ -183,8 +188,8 @@ function PlusButton({ added, onClick }) {
       transition:"all 0.2s",
       transform: added ? "scale(1)" : "scale(1)",
     }}
-      onMouseEnter={e => { if (!added) e.currentTarget.style.transform = "scale(1.1)"; }}
-      onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
+    onMouseEnter={e => { if (!added) e.currentTarget.style.transform = "scale(1.1)"; }}
+    onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
     >
       {added ? "✓" : "+"}
     </button>
@@ -192,6 +197,7 @@ function PlusButton({ added, onClick }) {
 }
 
 /* ─── CATALOG CARD ─────────────────────────────────────────────────────────── */
+
 function CatalogCard({ item, service, added, onAdd, idx }) {
   const s = SERVICES[service];
   return (
@@ -205,16 +211,16 @@ function CatalogCard({ item, service, added, onAdd, idx }) {
       animation:`slideUp 0.3s ease both`,
       animationDelay:`${idx * 0.04}s`,
     }}
-      onMouseEnter={e => {
-        e.currentTarget.style.borderColor = s.color + "66";
-        e.currentTarget.style.boxShadow = `0 8px 32px ${s.color}14`;
-        e.currentTarget.style.transform = "translateY(-1px)";
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.borderColor = T.border;
-        e.currentTarget.style.boxShadow = "none";
-        e.currentTarget.style.transform = "translateY(0)";
-      }}
+    onMouseEnter={e => {
+      e.currentTarget.style.borderColor = s.color + "66";
+      e.currentTarget.style.boxShadow = `0 8px 32px ${s.color}14`;
+      e.currentTarget.style.transform = "translateY(-1px)";
+    }}
+    onMouseLeave={e => {
+      e.currentTarget.style.borderColor = T.border;
+      e.currentTarget.style.boxShadow = "none";
+      e.currentTarget.style.transform = "translateY(0)";
+    }}
     >
       {/* Emoji thumb */}
       <div style={{
@@ -262,13 +268,15 @@ function CatalogCard({ item, service, added, onAdd, idx }) {
 }
 
 /* ─── MY LIST CARD ─────────────────────────────────────────────────────────── */
+
 function MyListCard({ item, onRemove, onToggleStatus, onUpdateProgress }) {
   const s = SERVICES[item.service];
   const [showEps, setShowEps] = useState(false);
   const pct = item.totalEpisodes > 1 ? Math.round(item.watchedEpisodes / item.totalEpisodes * 100) : null;
+
   const STATUS = {
     unwatched: { label:"未視聴", bg:"#F2F0EC", color:T.textSub },
-    watching:  { label:"視聴中", bg:`${T.sky}18`, color:T.sky },
+    watching: { label:"視聴中", bg:`${T.sky}18`, color:T.sky },
     completed: { label:"完了 ✓", bg:`${T.mint}18`, color:T.mint },
   };
   const nextStatus = { unwatched:"watching", watching:"completed", completed:"unwatched" };
@@ -379,8 +387,8 @@ function MyListCard({ item, onRemove, onToggleStatus, onUpdateProgress }) {
                     transition:"all 0.15s",
                     boxShadow: done ? `0 2px 8px ${s.color}44` : "none",
                   }}
-                    onMouseEnter={e => { if (!done) { e.currentTarget.style.background = s.light; e.currentTarget.style.color = s.color; }}}
-                    onMouseLeave={e => { if (!done) { e.currentTarget.style.background = T.bg; e.currentTarget.style.color = T.textSub; }}}
+                  onMouseEnter={e => { if (!done) { e.currentTarget.style.background = s.light; e.currentTarget.style.color = s.color; }}}
+                  onMouseLeave={e => { if (!done) { e.currentTarget.style.background = T.bg; e.currentTarget.style.color = T.textSub; }}}
                   >{ep}</button>
                 );
               })}
@@ -410,8 +418,8 @@ function MyListCard({ item, onRemove, onToggleStatus, onUpdateProgress }) {
           padding:"2px 4px",
           transition:"color 0.15s",
         }}
-          onMouseEnter={e => e.currentTarget.style.color = T.coral}
-          onMouseLeave={e => e.currentTarget.style.color = T.textSub}
+        onMouseEnter={e => e.currentTarget.style.color = T.coral}
+        onMouseLeave={e => e.currentTarget.style.color = T.textSub}
         >削除</button>
       </div>
     </div>
@@ -419,6 +427,7 @@ function MyListCard({ item, onRemove, onToggleStatus, onUpdateProgress }) {
 }
 
 /* ─── TOAST ─────────────────────────────────────────────────────────────────── */
+
 function Toast({ msg }) {
   if (!msg) return null;
   return (
@@ -435,6 +444,7 @@ function Toast({ msg }) {
 }
 
 /* ─── EMPTY STATE ─────────────────────────────────────────────────────────── */
+
 function EmptyState({ icon, title, sub }) {
   return (
     <div style={{
@@ -454,6 +464,7 @@ function EmptyState({ icon, title, sub }) {
 }
 
 /* ─── MAIN ─────────────────────────────────────────────────────────────────── */
+
 export default function App() {
   const [tab, setTab] = useState("catalog");
   const [svc, setSvc] = useState("Netflix");
@@ -546,7 +557,7 @@ export default function App() {
   const statCounts = {
     all: myList.length,
     unwatched: myList.filter(x => x.status === "unwatched").length,
-    watching:  myList.filter(x => x.status === "watching").length,
+    watching: myList.filter(x => x.status === "watching").length,
     completed: myList.filter(x => x.status === "completed").length,
   };
 
@@ -591,7 +602,7 @@ export default function App() {
         }}>
           {[
             { key:"catalog", label:"カタログ" },
-            { key:"mylist",  label:`マイリスト${myList.length > 0 ? ` ${myList.length}` : ""}` },
+            { key:"mylist", label:`マイリスト${myList.length > 0 ? ` ${myList.length}` : ""}` },
           ].map(t => (
             <button key={t.key} onClick={() => setTab(t.key)} style={{
               background: tab === t.key ? T.surface : "transparent",
@@ -722,10 +733,10 @@ export default function App() {
           {/* Stats row */}
           <div style={{ display:"flex", gap:8, marginBottom:20 }}>
             {[
-              { key:"all",       label:"全作品", color:T.textMid },
-              { key:"unwatched", label:"未視聴",  color:T.textSub },
-              { key:"watching",  label:"視聴中",  color:T.sky },
-              { key:"completed", label:"完了",    color:T.mint },
+              { key:"all", label:"全作品", color:T.textMid },
+              { key:"unwatched", label:"未視聴", color:T.textSub },
+              { key:"watching", label:"視聴中", color:T.sky },
+              { key:"completed", label:"完了", color:T.mint },
             ].map(s => (
               <button key={s.key} onClick={() => setFilter(s.key)} style={{
                 flex:1,
@@ -771,8 +782,8 @@ export default function App() {
           <div style={{ display:"flex", gap:8, marginBottom:16, alignItems:"center" }}>
             <div style={{ display:"flex", gap:5, flex:1, flexWrap:"wrap" }}>
               {[
-                { k:"all",       l:"すべて" },
-                { k:"tver",      l:"⏰ TVer" },
+                { k:"all", l:"すべて" },
+                { k:"tver", l:"⏰ TVer" },
               ].map(f => (
                 <button key={f.k} onClick={() => setFilter(f.k)} style={{
                   background: filter === f.k ? T.text : T.surface,
@@ -814,17 +825,30 @@ export default function App() {
               </div>
           }
         </>)}
+
       </main>
+
+      {/* ── FOOTER ── */}
+      <footer style={{
+        textAlign:"center", padding:"24px 16px 40px",
+        borderTop:`1.5px solid ${T.border}`, marginTop:8,
+      }}>
+        <a href="https://note.com/watchlist_jp" target="_blank" rel="noopener noreferrer" style={{
+          color: T.textSub, fontSize:12, fontWeight:700, textDecoration:"none",
+        }}>
+          📝 開発者のNoteを読む
+        </a>
+      </footer>
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700;800;900&display=swap');
         @keyframes slideUp {
           from { opacity:0; transform:translateY(12px); }
-          to   { opacity:1; transform:translateY(0); }
+          to { opacity:1; transform:translateY(0); }
         }
         @keyframes toastIn {
           from { opacity:0; transform:translateX(-50%) scale(0.92); }
-          to   { opacity:1; transform:translateX(-50%) scale(1); }
+          to { opacity:1; transform:translateX(-50%) scale(1); }
         }
         @keyframes pulse {
           0%,100% { opacity:1; }
@@ -832,7 +856,7 @@ export default function App() {
         }
         * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
         button { font-family:inherit; }
-        input  { font-family:inherit; }
+        input { font-family:inherit; }
         select { font-family:inherit; }
         ::-webkit-scrollbar { width:4px; }
         ::-webkit-scrollbar-thumb { background:${T.border}; border-radius:4px; }
